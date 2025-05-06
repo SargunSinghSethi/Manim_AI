@@ -125,6 +125,7 @@ def get_manim_code(user_prompt: str):
         if response:
             content = response.output[0].content[0].text
             parsed = json.loads(content)
+            print(content)
             if parsed.get("status") == "accepted":
                 code = parsed.get("code","")
                 with open("manim.py", "w", encoding="utf-8") as f:
