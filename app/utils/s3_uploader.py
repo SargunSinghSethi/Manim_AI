@@ -47,6 +47,5 @@ def upload_file_to_s3(file_path, object_name=None):
             s3_url = f"https://{AWS_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{object_name}"
 
         return {"status": "success", "url": s3_url}
-        return {"status": "success", "url": s3_url}
     except (BotoCoreError, NoCredentialsError) as e:
         return {"status": "error", "message": str(e)}

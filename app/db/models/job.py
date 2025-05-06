@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Enum, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Enum, DateTime, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -16,6 +16,7 @@ class Job(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     prompt = Column(String)
     job_uuid = Column(String, unique=True)
+    generated_code = Column(Text, nullable=True)
     status = Column(Enum(JobStatus), default=JobStatus.pending)
     error_message = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow())

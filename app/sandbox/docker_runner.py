@@ -3,7 +3,9 @@ import uuid
 import shutil
 import subprocess
 
-BASE_DIR = os.path("temp")
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.join(CURRENT_DIR, "temp")
+os.makedirs(BASE_DIR, exist_ok=True)
 
 def run_code_in_docker(code: str):
     job_id = str(uuid.uuid4())

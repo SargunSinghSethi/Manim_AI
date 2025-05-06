@@ -109,6 +109,7 @@ class JobStatusRoute(Resource):
                 video = db.query(Video).filter(Video.job_id == job_uuid).first()
                 if video:
                     response["video_url"] = video.video_url
+                    response["code"] = video.associated_code
 
             elif job.status == "failed":
                 response["error_message"] = job.error_message
@@ -144,6 +145,9 @@ def process_job(job_uuid: str, prompt: str):
                 
         code = response.get("code", "")
 
+        job.generated_code=code
+        db.commit()
+
         # Step 2: AST sanitizer
         safe, reason = sanitize_ast(code)
         if not safe:
@@ -170,6 +174,7 @@ def process_job(job_uuid: str, prompt: str):
                 user_id=job.user_id,
                 job_id=job.job_uuid,
                 title=f"Video for {prompt[:30]}",
+                associated_code=code,
                 video_url=s3_result["url"]
             )
             db.add(video)
@@ -178,7 +183,7 @@ def process_job(job_uuid: str, prompt: str):
             # Clean up local file after successful upload
             if os.path.exists(result["video_path"]):
                 print(f"VIDEO PATH = {result["video_path"]}")
-            #     os.remove(result["video_path"])
+                # os.remove(result["video_path"])
             return
         
         

@@ -127,10 +127,7 @@ def get_manim_code(user_prompt: str):
             parsed = json.loads(content)
             print(content)
             if parsed.get("status") == "accepted":
-                code = parsed.get("code","")
-                with open("manim.py", "w", encoding="utf-8") as f:
-                    f.write(code)
-                print("Response written to 'manim.py'")
+                print(f"{parsed}")
                 return parsed
             else:
                 print("Rejected Code contains malicious activity")
