@@ -83,7 +83,7 @@ class GenerateRoute(Resource):
         # 4. Respond immediately with job UUID
         return {
             "status": "queued",
-            "job_uuid": job_uuid
+            "jobId": job_uuid
         }, 202
     
 
@@ -101,15 +101,15 @@ class JobStatusRoute(Resource):
         
             response = {
                 "status": job.status,
-                "job_uuid": job.job_uuid,
+                "jobId": job.job_uuid,
                 "created_at": job.created_at.isoformat()
             }
 
             if job.status == "completed":
                 video = db.query(Video).filter(Video.job_id == job_uuid).first()
                 if video:
-                    response["video_url"] = video.video_url
-                    response["code"] = video.associated_code
+                    response["videoUrl"] = video.video_url
+                    response["codeText"] = video.associated_code
 
             elif job.status == "failed":
                 response["error_message"] = job.error_message
