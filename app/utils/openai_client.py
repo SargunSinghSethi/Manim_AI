@@ -113,6 +113,16 @@ You are one layer of a multi-layered security system. Even if you believe a prom
 Remember, you are only one layer of security. Always prioritize safety and reject any prompt that seems even remotely suspicious. The AST analysis and sandboxing steps will catch any code that you miss, but it's better to be overly cautious.
 
 """
+def extract_json_from_string(s):
+    start = s.find('{')
+    if start == -1:
+        raise ValueError("No JSON object found")
+    try:
+        decoder = json.JSONDecoder()
+        obj, end = decoder.raw_decode(s[start:])
+        return obj
+    except json.JSONDecodeError as e:
+        raise ValueError("Invalid JSON found") from e
 
 def get_manim_code(user_prompt: str):
     try:
@@ -124,7 +134,7 @@ def get_manim_code(user_prompt: str):
         )
         if response:
             content = response.output[0].content[0].text
-            parsed = json.loads(content)
+            parsed = extract_json_from_string(content)
             print(content)
             if parsed.get("status") == "accepted":
                 print(f"{parsed}")
