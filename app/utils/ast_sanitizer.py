@@ -2,7 +2,17 @@ import ast
 
 PROHIBITED_IMPORTS = {"os", "sys", "subprocess", "socket", "urllib"}
 PROHIBITED_FUNCTIONS = {"open", "eval", "exec", "compile", "globals", "locals", "input"}
-ALLOWED_BASE_CLASSES = {"Scene"}  # Only allow Manim Scene subclassing
+ALLOWED_BASE_CLASSES = {
+    "Scene", 
+    "ThreeDScene", 
+    "MovingCameraScene", 
+    "ZoomedScene", 
+    "LinearTransformationScene",
+    "Axes",
+    "NumberPlane",
+    "VectorScene",
+    "ReconfigurableScene"
+}  # Only allow Manim Scene subclassing
 
 def sanitize_ast(code: str):
     try:

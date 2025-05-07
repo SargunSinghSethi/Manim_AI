@@ -1,4 +1,0 @@
-{
-  "status": "accepted",
-  "code": "from manim import *\nimport numpy as np\n\nclass MovingSineWave(Scene):\n    def construct(self):\n        # Create axes\n        axes = Axes(x_range=[0, 10, 1], y_range=[-1.5, 1.5, 0.5], width=10, height=3)\n        self.add(axes)\n\n        # Define a sine wave function with a phase shift\n        def sine_wave(x, phase):\n            return np.sin(x + phase)\n\n        # Create the initial graph\n        graph = always_redraw(lambda: axes.plot(lambda x: sine_wave(x, self.phase), x_range=[0, 10], color=BLUE))\n        self.phase = 0\n        self.add(graph)\n\n        # Animate the phase shift to move wave from left to right\n        self.play(self.phase.animate.set_value(2 * PI), run_time=4, rate_func=linear)\n        self.wait()"
-}

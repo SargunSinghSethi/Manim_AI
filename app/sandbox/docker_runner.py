@@ -14,7 +14,7 @@ def run_code_in_docker(code: str):
 
     # Write the code to a Python file
     script_path = os.path.join(job_dir, "main.py")
-    with open(script_path, "w") as f:
+    with open(script_path, "w",encoding="utf-8") as f:
         f.write(code)
 
     # Run Docker

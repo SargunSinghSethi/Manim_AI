@@ -9,7 +9,7 @@ from flask_restx import Namespace, Resource, fields
 from app.utils.filters import is_prompt_unsafe
 from app.utils.openai_client import get_manim_code
 from app.utils.ast_sanitizer import sanitize_ast
-from app.utils.s3_uploader import upload_file_to_s3
+from app.utils.s3_handler import upload_file_to_s3, generate_presigned_url
 
 from app.sandbox.docker_runner import run_code_in_docker
 
@@ -108,16 +108,37 @@ class JobStatusRoute(Resource):
             if job.status == "completed":
                 video = db.query(Video).filter(Video.job_id == job_uuid).first()
                 if video:
-                    response["videoUrl"] = video.video_url
+                    response["videoId"] = video.id
                     response["codeText"] = video.associated_code
 
             elif job.status == "failed":
                 response["error_message"] = job.error_message
 
+            print("JOB_STATUS:" ,response)
             return response, 200
         finally:
             db.close()
 
+
+@main.route('/get_presigned_url/<string:video_id>')
+@main.param('video_id', 'VIDEO ID')
+class PresignedUrlRoute(Resource):
+    def get(self, video_id):
+        if not video_id:
+            return {'error': 'Missing video ID'}, 400
+
+        db = SessionLocal()
+        try:
+            video = db.query(Video).filter(Video.id == video_id).first()
+            if not video:
+                return {'error': 'Video not found'}, 404
+            response = generate_presigned_url(video.video_url)
+            return response
+        except Exception as e:
+            print(e)
+            return {'error': str(e)}, 500
+        finally:
+            db.close()
 
 
 
@@ -135,7 +156,6 @@ def process_job(job_uuid: str, prompt: str):
         # Step 1: OpenAI call
         print(f"PROMPT: {prompt}")
         response = get_manim_code(prompt)
-        # print(response)
 
         if response.get("status") == "rejected":
             job.status = JobStatus.failed
@@ -144,13 +164,17 @@ def process_job(job_uuid: str, prompt: str):
             return
                 
         code = response.get("code", "")
+        print(code)
 
         job.generated_code=code
         db.commit()
 
+        print("AST")
+
         # Step 2: AST sanitizer
         safe, reason = sanitize_ast(code)
         if not safe:
+            print(safe,reason)
             job.status = JobStatus.failed
             job.error_message = f"AST Sanitizer: {reason}"
             db.commit()
@@ -181,8 +205,8 @@ def process_job(job_uuid: str, prompt: str):
             db.commit()
 
             # Clean up local file after successful upload
-            if os.path.exists(result["video_path"]):
-                print(f"VIDEO PATH = {result["video_path"]}")
+            if os.path.exists(result['video_path']):
+                print(f"VIDEO PATH = {result['video_path']}")
                 # os.remove(result["video_path"])
             return
         

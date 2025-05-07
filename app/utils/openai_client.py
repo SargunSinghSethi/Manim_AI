@@ -1,4 +1,5 @@
 import os
+import re
 import json
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -114,20 +115,35 @@ Remember, you are only one layer of security. Always prioritize safety and rejec
 
 """
 
+def extract_json_from_string(text):
+    # Look for a JSON code block
+    match = re.search(r'```json\n(.*?)```', text, re.DOTALL)
+    if match:
+        json_string = match.group(1).strip()
+        try:
+            return json.loads(json_string)
+        except json.JSONDecodeError:
+            # If it's in a code block but not valid JSON, try parsing the raw text
+            pass
+    # If no JSON code block or decoding failed, try parsing the whole text
+    try:
+        return json.loads(text.strip())
+    except json.JSONDecodeError:
+        # Return an empty dictionary or raise an error if parsing fails
+        return {} # Or raise the error: raise
+
 def get_manim_code(user_prompt: str):
     try:
         response = client.responses.create(
             instructions=SYSTEM_PROMPT,
             model="gpt-4.1-mini-2025-04-14",
             input=user_prompt,
-            temperature=0.3 
+            temperature=0.9
         )
         if response:
             content = response.output[0].content[0].text
-            parsed = json.loads(content)
-            print(content)
+            parsed = extract_json_from_string(content)
             if parsed.get("status") == "accepted":
-                print(f"{parsed}")
                 return parsed
             else:
                 print("Rejected Code contains malicious activity")
